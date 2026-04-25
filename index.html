@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lịch Gieo Sạ Lúa - Mekong 2025-2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --green-50: #f0fdf4; --green-100: #dcfce7; --green-200: #bbf7d0;
+    --green-400: #4ade80; --green-500: #22c55e; --green-600: #16a34a;
+    --green-700: #15803d; --green-800: #166534; --green-900: #14532d;
+    --amber-50: #fffbeb; --amber-100: #fef3c7; --amber-400: #fbbf24;
+    --amber-500: #f59e0b; --amber-600: #d97706; --amber-800: #92400e;
+    --red-50: #fef2f2; --red-400: #f87171; --red-600: #dc2626; --red-800: #991b1b;
+    --blue-50: #eff6ff; --blue-400: #60a5fa; --blue-600: #2563eb; --blue-800: #1e40af;
+    --purple-50: #faf5ff; --purple-400: #c084fc; --purple-600: #9333ea; --purple-800: #6b21a8;
+    --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
+    --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-500: #6b7280;
+    --gray-600: #4b5563; --gray-700: #374151; --gray-800: #1f2937; --gray-900: #111827;
+    --sidebar-w: 260px;
+    --header-h: 64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--green-800);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: width 0.25s ease, min-width 0.25s ease;
+    position: relative;
+  }
+  .sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+  }
+  .sidebar.collapsed > * {
+    display: none;
+  }
+  .toggle-btn {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    background: var(--green-800);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    transition: left 0.25s ease, background 0.15s;
+  }
+  .toggle-btn:hover { background: var(--green-700); }
+  @media (min-width: 768px) {
+    .toggle-btn { left: calc(var(--sidebar-w) - 18px); }
+    .toggle-btn.collapsed { left: 12px; }
+  }
+
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .sidebar-logo .title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: white;
+  }
+  .sidebar-logo .sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 3px;
+  }
+
+  .sidebar-section { padding: 16px 16px 8px; }
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+  }
+
+  .filter-group { margin-bottom: 14px; }
+  .filter-group label {
+    display: block;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  .filter-group select, .filter-group input {
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+  }
+  .filter-group select option { background: var(--green-800); color: white; }
+  .filter-group select:focus, .filter-group input:focus {
+    border-color: var(--green-400);
+  }
+  .filter-group input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 10px;
+  }
+  .nav-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 12px;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+  .nav-btn.active { background: rgba(255,255,255,0.15); color: white; }
+
+  .sidebar-stats {
+    margin-top: auto;
+    padding: 16px;
+    background: rgba(0,0,0,0.2);
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .stat-pill {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .stat-pill:last-child { border-bottom: none; }
+  .stat-pill .k { color: rgba(255,255,255,0.5); }
+  .stat-pill .v { font-weight: 600; color: white; }
+
+  /* MAIN */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .header {
+    height: var(--header-h);
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .header h1 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--gray-900);
+    flex: 1;
+  }
+  .header .today-badge {
+    font-size: 12px;
+    background: var(--green-50);
+    color: var(--green-700);
+    border: 1px solid var(--green-200);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-weight: 600;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 7px 12px;
+    gap: 8px;
+    width: 220px;
+  }
+  .search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--gray-900);
+    width: 100%;
+  }
+  .search-bar input::placeholder { color: var(--gray-400); }
+
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+  }
+
+  /* TABS */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--gray-200);
+    padding-bottom: 0;
+  }
+  .tab {
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-500);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--gray-800); }
+  .tab.active { color: var(--green-700); border-bottom-color: var(--green-600); font-weight: 600; }
+
+  /* VIEW PANELS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .kpi-card .kpi-label {
+    font-size: 11.5px;
+    color: var(--gray-500);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .kpi-card .kpi-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1;
+  }
+  .kpi-card .kpi-sub {
+    font-size: 11px;
+    color: var(--gray-400);
+    margin-top: 4px;
+  }
+  .kpi-card.green { border-left: 3px solid var(--green-500); }
+  .kpi-card.amber { border-left: 3px solid var(--amber-500); }
+  .kpi-card.blue { border-left: 3px solid var(--blue-600); }
+  .kpi-card.purple { border-left: 3px solid var(--purple-600); }
+
+  /* CHARTS */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .chart-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .chart-card.full { grid-column: 1 / -1; }
+  .chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 12px;
+  }
+
+  /* TABLE */
+  .table-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .table-header h3 { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+  .result-count {
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  th {
+    background: var(--gray-50);
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--gray-200);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  th:hover { color: var(--gray-700); }
+  th.sorted { color: var(--green-700); }
+  th .sort-arrow { margin-left: 4px; opacity: 0.5; }
+  th.sorted .sort-arrow { opacity: 1; }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-700);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-50); }
+
+  /* STAGE BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-ma { background: var(--blue-50); color: var(--blue-800); }
+  .badge-chuan { background: var(--amber-50); color: var(--amber-800); }
+  .badge-chin { background: var(--purple-50); color: var(--purple-800); }
+  .badge-thu { background: var(--green-100); color: var(--green-800); }
+  .badge-none { background: var(--gray-100); color: var(--gray-500); }
+
+  /* SEASON BADGE */
+  .season-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .s-dx { background: #dbeafe; color: #1e40af; }
+  .s-td { background: #d1fae5; color: #065f46; }
+  .s-ht { background: #fef3c7; color: #92400e; }
+
+  /* PAGINATION */
+  .pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--gray-100);
+    font-size: 12px;
+  }
+  .page-btn {
+    padding: 5px 10px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    background: white;
+    color: var(--gray-600);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    transition: all 0.1s;
+  }
+  .page-btn:hover { background: var(--gray-50); }
+  .page-btn.active { background: var(--green-600); color: white; border-color: var(--green-600); font-weight: 600; }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* CALENDAR VIEW */
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .month-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .month-header {
+    background: var(--green-700);
+    color: white;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .month-header .month-ha {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  .month-body { padding: 12px 14px; }
+  .province-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 12px;
+  }
+  .province-row:last-child { border-bottom: none; }
+  .province-row .pname { color: var(--gray-700); flex: 1; }
+  .province-row .pval { font-weight: 600; color: var(--gray-800); text-align: right; font-size: 11.5px; }
+
+  /* SCROLLBAR */
+  .content::-webkit-scrollbar { width: 6px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+  /* PROVINCE MAP SUMMARY */
+  .province-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .prov-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .prov-card:hover { border-color: var(--green-400); box-shadow: 0 0 0 2px var(--green-100); }
+  .prov-card .pname { font-size: 13px; font-weight: 600; color: var(--gray-800); margin-bottom: 6px; }
+  .prov-card .pstage-bar { height: 4px; background: var(--gray-100); border-radius: 2px; overflow: hidden; display: flex; gap: 1px; margin-bottom: 6px; }
+  .prov-card .pbar-seg { height: 100%; }
+  .prov-card .pmeta { font-size: 11px; color: var(--gray-400); display: flex; justify-content: space-between; }
+  .prov-card .pmeta .total { font-weight: 600; color: var(--gray-700); }
+  /* Calendar tree */
+  .cal-prov-block { margin-bottom: 6px; }
+  .cal-prov-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 8px; background: var(--green-50); border-radius: 6px;
+    cursor: pointer; font-size: 12px; font-weight: 600; color: var(--green-800);
+    border: 1px solid var(--green-100);
+  }
+  .cal-prov-row:hover { background: var(--green-100); }
+  .cal-dists { display: none; padding-left: 10px; margin-top: 3px; }
+  .cal-dists.open { display: block; }
+  .cal-dist-block { margin-bottom: 4px; }
+  .cal-dist-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 8px; background: #f8fafc; border-radius: 5px;
+    cursor: pointer; font-size: 11.5px; font-weight: 500; color: var(--gray-700);
+    border: 1px solid var(--gray-100);
+  }
+  .cal-dist-row:hover { background: var(--gray-100); }
+  .cal-villages { display: none; padding-left: 10px; margin-top: 2px; }
+  .cal-villages.open { display: block; }
+  .cal-village-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 3px 8px; font-size: 11px; color: var(--gray-500);
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .cal-village-row:last-child { border-bottom: none; }
+  .cal-vname { color: var(--gray-600); }
+  .cal-vval { color: var(--gray-700); font-weight: 500; white-space: nowrap; }
+  .cal-pname, .cal-dname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .cal-pval, .cal-dval { white-space: nowrap; margin-left: 8px; }
+
+  .no-data { text-align: center; color: var(--gray-400); padding: 40px; font-size: 14px; }
+
+  /* Progress bar for Ha utilization */
+  .progress-bar {
+    height: 4px;
+    background: var(--gray-100);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--green-500);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+  .progress-fill.over { background: var(--amber-500); }
+
+  /* DAS indicator */
+  .das-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .das-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .das-early { color: var(--blue-600); }
+  .das-early .das-dot { background: var(--blue-400); }
+  .das-mid { color: var(--green-700); }
+  .das-mid .das-dot { background: var(--green-500); }
+  .das-late { color: var(--amber-600); }
+  .das-late .das-dot { background: var(--amber-500); }
+  .das-harvest { color: var(--red-600); }
+  .das-harvest .das-dot { background: var(--red-400); }
+
+  .empty-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gray-400);
+    font-size: 14px;
+  }
+
+</style>
+</head>
+<body>
+
+<div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f0fdf4;z-index:999;flex-direction:column;gap:16px">
+  <div style="width:48px;height:48px;border:4px solid #dcfce7;border-top-color:#166534;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+  <p style="color:#166534;font-size:14px;font-weight:600">Đang tải dữ liệu từ Google Sheets...</p>
+  <p style="color:#6b7280;font-size:12px">Vui lòng chờ một chút</p>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<div id="app" style="display:none;width:100%;height:100vh">
+<button class="toggle-btn" id="toggle-btn" onclick="toggleSidebar()" title="Ẩn/Hiện bộ lọc">☰</button>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="title">🌾 Lịch Gieo Sạ</div>
+    <div class="sub">Mekong Rice Calendar 2025–2026</div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Bộ lọc</div>
+
+    <div class="filter-group">
+      <label>Vụ lúa</label>
+      <select id="f-season">
+        <option value="">Tất cả vụ</option>
+        <option value="DX/AW 25-26">Đông Xuân 25-26</option>
+        <option value="TD/AW 26">Thu Đông 26</option>
+        <option value="HT/SA   26">Hè Thu 26</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Giai đoạn</label>
+      <select id="f-stage">
+        <option value="">Tất cả giai đoạn</option>
+        <option value="Mạ">🌱 Mạ</option>
+        <option value="Chuẩn bị xuống giống">⏳ Chuẩn bị xuống giống</option>
+        <option value="Chín">🌾 Chín</option>
+        <option value="Thu hoạch">✂ Thu hoạch</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Tỉnh / Thành phố</label>
+      <select id="f-prov">
+        
+        <option value="">Tất cả tỉnh</option>
+        <option value="An Giang">An Giang</option>
+        <option value="Ba Ria - Vung Tau">Ba Ria - Vung Tau</option>
+        <option value="Binh Dinh">Binh Dinh</option>
+        <option value="Binh Thuan">Binh Thuan</option>
+        <option value="Bạc Liêu">Bạc Liêu</option>
+        <option value="Bến Tre">Bến Tre</option>
+        <option value="Cà Mau">Cà Mau</option>
+        <option value="Cần Thơ">Cần Thơ</option>
+        <option value="DakLak">DakLak</option>
+        <option value="DakNong">DakNong</option>
+        <option value="Dong Nai">Dong Nai</option>
+        <option value="Dong Thap">Dong Thap</option>
+        <option value="Gia Lai">Gia Lai</option>
+        <option value="Hậu Giang">Hậu Giang</option>
+        <option value="Khanh Hoa">Khanh Hoa</option>
+        <option value="Kiên Giang">Kiên Giang</option>
+        <option value="KomTum">KomTum</option>
+        <option value="Long An">Long An</option>
+        <option value="Ninh Thuan">Ninh Thuan</option>
+        <option value="Phú yên">Phú yên</option>
+        <option value="Quảng Bình">Quảng Bình</option>
+        <option value="Quảng Nam">Quảng Nam</option>
+        <option value="Quảng Ngãi">Quảng Ngãi</option>
+        <option value="Quảng Trị">Quảng Trị</option>
+        <option value="Sóc Trăng">Sóc Trăng</option>
+        <option value="Tay Ninh">Tay Ninh</option>
+        <option value="Thừa Thiên Huế">Thừa Thiên Huế</option>
+        <option value="Tiền Giang">Tiền Giang</option>
+        <option value="Trà Vinh">Trà Vinh</option>
+        <option value="Vĩnh Long">Vĩnh Long</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Tháng gieo sạ</label>
+      <select id="f-month">
+        <option value="">Tất cả tháng</option>
+        <option value="1">Tháng 1</option>
+        <option value="3">Tháng 3</option>
+        <option value="4">Tháng 4</option>
+        <option value="5">Tháng 5</option>
+        <option value="6">Tháng 6</option>
+        <option value="7">Tháng 7</option>
+        <option value="8">Tháng 8</option>
+        <option value="9">Tháng 9</option>
+        <option value="10">Tháng 10</option>
+        <option value="11">Tháng 11</option>
+        <option value="12">Tháng 12</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Nhân viên</label>
+      <select id="f-nv">
+        <option value="">Tất cả nhân viên</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="padding: 0 10px;">
+    <div class="sidebar-label" style="padding: 0 6px; margin-bottom: 6px;">Màn hình</div>
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard', this)">
+        <span>📊</span> Tổng quan
+      </button>
+      <button class="nav-btn" data-view="table" onclick="switchView('table', this)">
+        <span>📋</span> Danh sách chi tiết
+      </button>
+      <button class="nav-btn" data-view="calendar" onclick="switchView('calendar', this)">
+        <span>📅</span> Lịch theo tháng
+      </button>
+      <button class="nav-btn" data-view="provinces" onclick="switchView('provinces', this)">
+        <span>🗺</span> Theo tỉnh
+      </button>
+    </nav>
+  </div>
+
+  <div class="sidebar-stats">
+    <div class="stat-pill">
+      <span class="k">Tổng diện tích</span>
+      <span class="v" id="sb-total">—</span>
+    </div>
+    <div class="stat-pill">
+      <span class="k">Đang lọc</span>
+      <span class="v" id="sb-filtered">—</span>
+    </div>
+    <div class="stat-pill">
+      <span class="k">Số tỉnh</span>
+      <span class="v" id="sb-provs">—</span>
+    </div>
+    <div class="stat-pill">
+      <span class="k">Số huyện</span>
+      <span class="v" id="sb-dists">—</span>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="header">
+    <h1 id="view-title">Tổng quan</h1>
+    <div class="today-badge" id="today-display"></div>
+    <div class="search-bar">
+      <span style="color: #9ca3af; font-size: 14px;">🔍</span>
+      <input type="text" id="search-input" placeholder="Tìm tỉnh, huyện..." oninput="applyFilters()">
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD VIEW -->
+    <div class="view active" id="view-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi-card green">
+          <div class="kpi-label">Tổng diện tích gieo sạ</div>
+          <div class="kpi-value" id="kpi-ha">—</div>
+          <div class="kpi-sub">hecta (Ha)</div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-label">Kế hoạch</div>
+          <div class="kpi-value" id="kpi-plan">—</div>
+          <div class="kpi-sub">Ha</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Số tỉnh</div>
+          <div class="kpi-value" id="kpi-provs">—</div>
+          <div class="kpi-sub">tỉnh/thành</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-label">DAS trung bình</div>
+          <div class="kpi-value" id="kpi-das">—</div>
+          <div class="kpi-sub">ngày sau gieo</div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Diện tích theo giai đoạn sinh trưởng</div>
+          <div style="position: relative; height: 220px;">
+            <canvas id="chart-stage" role="img" aria-label="Biểu đồ diện tích theo giai đoạn"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Phân bổ theo vụ lúa</div>
+          <div style="position: relative; height: 220px;">
+            <canvas id="chart-season" role="img" aria-label="Biểu đồ phân bổ theo vụ"></canvas>
+          </div>
+        </div>
+        <div class="chart-card full">
+          <div class="chart-title">Diện tích gieo sạ theo tháng (Ha)</div>
+          <div style="position: relative; height: 220px;">
+            <canvas id="chart-monthly" role="img" aria-label="Biểu đồ gieo sạ theo tháng"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card" style="margin-bottom: 20px;">
+        <div class="chart-title">Top 10 tỉnh — diện tích gieo sạ</div>
+        <div style="position: relative; height: 280px;">
+          <canvas id="chart-top10" role="img" aria-label="Top 10 tỉnh diện tích"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE VIEW -->
+    <div class="view" id="view-table">
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Danh sách chi tiết</h3>
+          <span class="result-count" id="result-count">0 kết quả</span>
+        </div>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortTable('prov')">Tỉnh <span class="sort-arrow">↕</span></th>
+                <th onclick="sortTable('dist')">Huyện <span class="sort-arrow">↕</span></th>
+                <th onclick="sortTable('village')">Xã <span class="sort-arrow">↕</span></th>
+                <th onclick="sortTable('s')">Vụ <span class="sort-arrow">↕</span></th>
+                <th onclick="sortTable('sd')">Ngày gieo <span class="sort-arrow">↕</span></th>
+                <th onclick="sortTable('stage')">Giai đoạn <span class="sort-arrow">↕</span></th>
+                <th onclick="sortTable('ha')">Diện tích (Ha) <span class="sort-arrow">↕</span></th>
+                <th onclick="sortTable('plan')">Kế hoạch (Ha) <span class="sort-arrow">↕</span></th>
+                <th onclick="sortTable('das')">DAS <span class="sort-arrow">↕</span></th>
+                <th>Nhân viên</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+
+    <!-- CALENDAR VIEW -->
+    <div class="view" id="view-calendar">
+      <div class="month-grid" id="month-grid"></div>
+    </div>
+
+    <!-- PROVINCES VIEW -->
+    <div class="view" id="view-provinces">
+      <div class="chart-card" style="margin-bottom:16px">
+        <div class="chart-title">Diện tích gieo sạ theo tỉnh (Ha) — Biểu đồ bong bóng</div>
+        <div id="province-bubble-wrap" style="position:relative;width:100%;overflow-x:auto">
+          <svg id="province-bubble-chart" style="width:100%;display:block"></svg>
+        </div>
+      </div>
+      <div class="province-summary-grid" id="province-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbzTZdscpN44UQKIcQwZ5gPa_viAHBLBTj6weIM2Pe6WZzOqTtOI9zR28IOLGZN3kzApQw/exec';
+let RAW = [];
+
+function parseJSON(rows) {
+  if (!rows || rows.length < 6) return [];
+  const header = rows[4].map(h => String(h).trim());
+  const colMap = {};
+  header.forEach((h,i) => { colMap[h] = i; });
+
+  const get = (row, key) => {
+    const i = colMap[key];
+    return (i !== undefined && row[i] !== undefined && row[i] !== null) ? String(row[i]).trim() : '';
+  };
+
+  const results = [];
+  for (let i = 5; i < rows.length; i++) {
+    const row = rows[i];
+    const season = get(row, 'Season');
+    if (!season) continue;
+    const sdRaw = get(row, 'Sowing day');
+    let sd = '';
+    if (sdRaw && sdRaw !== '00:00:00' && sdRaw !== '') {
+      const d = new Date(sdRaw);
+      if (!isNaN(d.getTime())) sd = d.toISOString().slice(0,10);
+    }
+    const ha = parseFloat(get(row, 'Sowing Ha')) || 0;
+    const plan = parseFloat(get(row, 'Plan (Ha)')) || 0;
+    const das = parseInt(get(row, 'DAS')) || 0;
+    const month = parseInt(get(row, 'MONTH')) || 0;
+    results.push({
+      s: season,
+      tsm: get(row, 'TSM'),
+      prov: get(row, 'Province'),
+      dist: get(row, 'District'),
+      village: get(row, 'Village'),
+      stage: get(row, 'Crop Stage'),
+      sd, ha, plan, das, month,
+      nv: get(row, 'Nhân viên')
+    });
+  }
+  return results;
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('toggle-btn');
+  const isCollapsed = sidebar.classList.toggle('collapsed');
+  btn.textContent = isCollapsed ? '☰' : '✕';
+  btn.classList.toggle('collapsed', isCollapsed);
+  if (window.innerWidth >= 768) {
+    btn.style.left = isCollapsed ? '12px' : 'calc(var(--sidebar-w) - 18px)';
+  }
+}
+
+function populateNV() {
+  const sel = document.getElementById('f-nv');
+  const nvSet = [...new Set(RAW.map(r=>r.nv).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Tất cả nhân viên</option>' +
+    nvSet.map(n => `<option value="${n}"${n===cur?' selected':''}>${n}</option>`).join('');
+}
+
+async function loadData() {
+  const loader = document.getElementById('loader');
+  const app = document.getElementById('app');
+  try {
+    const resp = await fetch(APPS_URL);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const rows = await resp.json();
+    RAW = parseJSON(rows);
+    populateNV();
+    if (loader) loader.style.display = 'none';
+    if (app) app.style.display = 'flex';
+    applyFilters();
+  } catch(e) {
+    if (loader) loader.innerHTML = '<div style="text-align:center;padding:40px"><p style="color:#dc2626;font-size:15px;font-weight:600">Không thể tải dữ liệu</p><p style="color:#6b7280;font-size:13px;margin-top:8px">'+e.message+'</p><button onclick="loadData()" style="margin-top:16px;padding:8px 20px;background:#166534;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px">Thử lại</button></div>';
+  }
+}
+
+const STAGE_COLORS = {
+  'Mạ':                    {badge: 'badge-ma',    bar: '#60a5fa', hex: '#2563eb'},
+  'Chuẩn bị xuống giống':  {badge: 'badge-chuan', bar: '#fbbf24', hex: '#d97706'},
+  'Chín':                  {badge: 'badge-chin',  bar: '#c084fc', hex: '#9333ea'},
+  'Thu hoạch':             {badge: 'badge-thu',   bar: '#4ade80', hex: '#16a34a'},
+};
+const MONTH_NAMES = ['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6',
+                     'Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+const SEASON_CLASS = {'DX/AW 25-26':'s-dx','TD/AW 26':'s-td','HT/SA   26':'s-ht'};
+const SEASON_LABEL = {'DX/AW 25-26':'Đông Xuân','TD/AW 26':'Thu Đông','HT/SA   26':'Hè Thu'};
+
+let filtered = [...RAW];
+let sortKey = 'ha', sortDir = -1;
+let currentPage = 1;
+const PER_PAGE = 30;
+let charts = {};
+
+function fmtHa(v) {
+  if (!v) return '0';
+  if (v >= 1000000) return (v/1000000).toFixed(1) + 'M';
+  if (v >= 1000) return (v/1000).toFixed(1) + 'K';
+  return Math.round(v).toLocaleString('vi-VN');
+}
+
+function stageBadge(stage) {
+  const c = STAGE_COLORS[stage] || {badge:'badge-none'};
+  return `<span class="badge ${c.badge}">${stage || '—'}</span>`;
+}
+
+function dasBadge(das) {
+  if (!das) return '<span class="das-indicator das-early"><span class="das-dot"></span>—</span>';
+  const cls = das < 30 ? 'das-early' : das < 70 ? 'das-mid' : das < 100 ? 'das-late' : 'das-harvest';
+  return `<span class="das-indicator ${cls}"><span class="das-dot"></span>${das}d</span>`;
+}
+
+function seasonBadge(s) {
+  const cls = SEASON_CLASS[s] || '';
+  const lbl = SEASON_LABEL[s] || s;
+  return `<span class="season-badge ${cls}">${lbl}</span>`;
+}
+
+function applyFilters() {
+  const season = document.getElementById('f-season').value;
+  const stage  = document.getElementById('f-stage').value;
+  const month  = document.getElementById('f-month').value;
+  const prov   = document.getElementById('f-prov').value;
+  const nv     = document.getElementById('f-nv').value;
+  const search = document.getElementById('search-input').value.toLowerCase().trim();
+
+  filtered = RAW.filter(r => {
+    if (season && r.s !== season) return false;
+    if (stage  && r.stage !== stage) return false;
+    if (month  && String(r.month) !== month) return false;
+    if (prov   && r.prov !== prov) return false;
+    if (nv     && r.nv !== nv) return false;
+    if (search && !r.prov.toLowerCase().includes(search) && !r.dist.toLowerCase().includes(search) && !(r.village||'').toLowerCase().includes(search) && !r.nv.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  currentPage = 1;
+  updateAll();
+}
+
+function updateAll() {
+  updateSidebar();
+  updateDashboard();
+  updateTable();
+  updateCalendar();
+  updateProvinces();
+}
+
+function updateSidebar() {
+  const totalHa = filtered.reduce((s,r) => s+r.ha, 0);
+  const totalAll = RAW.reduce((s,r) => s+r.ha, 0);
+  const provs = new Set(filtered.map(r=>r.prov)).size;
+  const dists = new Set(filtered.map(r=>r.prov+'|'+r.dist)).size;
+  document.getElementById('sb-total').textContent = fmtHa(totalAll) + ' Ha';
+  document.getElementById('sb-filtered').textContent = fmtHa(totalHa) + ' Ha';
+  document.getElementById('sb-provs').textContent = provs;
+  document.getElementById('sb-dists').textContent = dists;
+}
+
+function updateDashboard() {
+  const totalHa = filtered.reduce((s,r) => s+r.ha, 0);
+  const totalPlan = filtered.reduce((s,r) => s+r.plan, 0);
+  const provs = new Set(filtered.map(r=>r.prov)).size;
+  const dasVals = filtered.filter(r=>r.das>0).map(r=>r.das);
+  const avgDas = dasVals.length ? Math.round(dasVals.reduce((a,b)=>a+b,0)/dasVals.length) : 0;
+
+  document.getElementById('kpi-ha').textContent = fmtHa(totalHa);
+  document.getElementById('kpi-plan').textContent = fmtHa(totalPlan);
+  document.getElementById('kpi-provs').textContent = provs;
+  document.getElementById('kpi-das').textContent = avgDas || '—';
+
+  // Stage chart
+  const stageData = {};
+  filtered.forEach(r => { if(r.stage) stageData[r.stage] = (stageData[r.stage]||0) + r.ha; });
+  const stageLabels = Object.keys(stageData);
+  const stageVals = Object.values(stageData);
+  const stageColors = stageLabels.map(s => (STAGE_COLORS[s]||{hex:'#9ca3af'}).hex);
+  renderDoughnut('chart-stage', stageLabels, stageVals, stageColors);
+
+  // Season chart
+  const seasonData = {};
+  filtered.forEach(r => { seasonData[r.s] = (seasonData[r.s]||0) + r.ha; });
+  const sLabels = Object.keys(seasonData).map(s => SEASON_LABEL[s]||s);
+  const sVals = Object.values(seasonData);
+  renderDoughnut('chart-season', sLabels, sVals, ['#1e40af','#065f46','#92400e']);
+
+  // Monthly chart
+  const monthData = {};
+  filtered.forEach(r => { if(r.month>0) monthData[r.month] = (monthData[r.month]||0) + r.ha; });
+  const mLabels = Array.from({length:12},(_,i)=>i+1).filter(m=>monthData[m]!==undefined);
+  const mVals = mLabels.map(m=>monthData[m]||0);
+  renderBar('chart-monthly', mLabels.map(m=>MONTH_NAMES[m]), mVals);
+
+  // Top 10 provinces
+  const provData = {};
+  filtered.forEach(r => { provData[r.prov] = (provData[r.prov]||0) + r.ha; });
+  const sorted = Object.entries(provData).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  renderHBar('chart-top10', sorted.map(e=>e[0]), sorted.map(e=>e[1]));
+}
+
+function renderDoughnut(id, labels, data, colors) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  charts[id] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: { position: 'right', labels: { font: {size:11, family:'Be Vietnam Pro'}, boxWidth: 12, padding: 8 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmtHa(ctx.raw)} Ha` } }
+      }
+    }
+  });
+}
+
+function renderBar(id, labels, data) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Diện tích (Ha)',
+        data,
+        backgroundColor: '#22c55e88',
+        borderColor: '#16a34a',
+        borderWidth: 1.5,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: {display:false}, tooltip: { callbacks: { label: ctx => ` ${fmtHa(ctx.raw)} Ha` } } },
+      scales: {
+        x: { grid: {display:false}, ticks: {font:{size:11}} },
+        y: { grid: {color:'#f3f4f6'}, ticks: {font:{size:10}, callback: v => fmtHa(v)} }
+      }
+    }
+  });
+}
+
+function renderHBar(id, labels, data) {
+  if (charts[id]) charts[id].destroy();
+  const h = Math.max(200, labels.length * 30 + 60);
+  document.getElementById(id).parentElement.style.height = h + 'px';
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Diện tích (Ha)',
+        data,
+        backgroundColor: '#166534cc',
+        borderRadius: 3,
+        barThickness: 18
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${fmtHa(ctx.raw)} Ha`}} },
+      scales: {
+        x: { grid:{color:'#f3f4f6'}, ticks:{font:{size:10}, callback: v=>fmtHa(v)} },
+        y: { grid:{display:false}, ticks:{font:{size:12}} }
+      }
+    }
+  });
+}
+
+function updateTable() {
+  let data = [...filtered];
+  // sort
+  data.sort((a,b) => {
+    let va = a[sortKey]||'', vb = b[sortKey]||'';
+    if (typeof va === 'number') return (va-vb)*sortDir;
+    return String(va).localeCompare(String(vb),'vi')*sortDir;
+  });
+
+  document.getElementById('result-count').textContent = data.length.toLocaleString('vi-VN') + ' kết quả';
+  const totalPages = Math.ceil(data.length / PER_PAGE);
+  const page = data.slice((currentPage-1)*PER_PAGE, currentPage*PER_PAGE);
+
+  const tbody = document.getElementById('table-body');
+  if (page.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" class="empty-msg">Không có dữ liệu phù hợp</td></tr>`;
+  } else {
+    tbody.innerHTML = page.map(r => {
+      const pct = r.plan > 0 ? Math.min(r.ha/r.plan*100, 150) : 0;
+      const over = pct > 105;
+      return `<tr>
+        <td style="font-weight:500">${r.prov}</td>
+        <td>${r.dist||'—'}</td>
+        <td style="font-size:11.5px;color:#374151">${r.village||'—'}</td>
+        <td>${seasonBadge(r.s)}</td>
+        <td style="font-size:11.5px;color:#6b7280">${r.sd||'—'}</td>
+        <td>${stageBadge(r.stage)}</td>
+        <td>
+          <span style="font-weight:600">${fmtHa(r.ha)}</span>
+          <div class="progress-bar"><div class="progress-fill ${over?'over':''}" style="width:${Math.min(pct,100)}%"></div></div>
+        </td>
+        <td style="color:#6b7280">${fmtHa(r.plan)}</td>
+        <td>${dasBadge(r.das)}</td>
+        <td style="font-size:11.5px;color:#6b7280;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nv||'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Pagination
+  const pg = document.getElementById('pagination');
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+  let btns = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  const range = pagRange(currentPage, totalPages);
+  range.forEach(p => {
+    if (p === '...') btns += `<span style="padding:5px 4px;color:#9ca3af">…</span>`;
+    else btns += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+  });
+  btns += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  pg.innerHTML = btns;
+}
+
+function pagRange(cur, total) {
+  if (total <= 7) return Array.from({length:total},(_,i)=>i+1);
+  const r = [1];
+  if (cur > 3) r.push('...');
+  for (let i = Math.max(2,cur-1); i <= Math.min(total-1,cur+1); i++) r.push(i);
+  if (cur < total-2) r.push('...');
+  r.push(total);
+  return r;
+}
+
+function goPage(p) {
+  const total = Math.ceil(filtered.length / PER_PAGE);
+  if (p < 1 || p > total) return;
+  currentPage = p;
+  updateTable();
+  document.querySelector('.content').scrollTop = 0;
+}
+
+function sortTable(key) {
+  if (sortKey === key) sortDir *= -1;
+  else { sortKey = key; sortDir = -1; }
+  document.querySelectorAll('th').forEach(th => th.classList.remove('sorted'));
+  event.currentTarget.classList.add('sorted');
+  event.currentTarget.querySelector('.sort-arrow').textContent = sortDir > 0 ? '↑' : '↓';
+  currentPage = 1;
+  updateTable();
+}
+
+function updateCalendar() {
+  const months = [1,3,4,5,6,7,8,9,10,11,12];
+  const html = months.map(m => {
+    const rows = filtered.filter(r => r.month === m);
+    if (rows.length === 0) return '';
+    const totalHa = rows.reduce((s,r)=>s+r.ha,0);
+
+    // Group: Tỉnh → Huyện → Xã
+    const tree = {};
+    rows.forEach(r => {
+      const p = r.prov||'—', d = r.dist||'—', v = r.village||'—';
+      if (!tree[p]) tree[p] = {};
+      if (!tree[p][d]) tree[p][d] = {};
+      tree[p][d][v] = (tree[p][d][v]||0) + r.ha;
+    });
+
+    const provEntries = Object.entries(tree).sort((a,b) => {
+      const ha_a = Object.values(a[1]).flatMap(Object.values).reduce((s,v)=>s+v,0);
+      const ha_b = Object.values(b[1]).flatMap(Object.values).reduce((s,v)=>s+v,0);
+      return ha_b - ha_a;
+    });
+
+    const provRows = provEntries.map(([prov, dists]) => {
+      const provHa = Object.values(dists).flatMap(Object.values).reduce((s,v)=>s+v,0);
+      const distRows = Object.entries(dists).sort((a,b)=>{
+        const ha_a = Object.values(a[1]).reduce((s,v)=>s+v,0);
+        const ha_b = Object.values(b[1]).reduce((s,v)=>s+v,0);
+        return ha_b - ha_a;
+      }).map(([dist, villages]) => {
+        const distHa = Object.values(villages).reduce((s,v)=>s+v,0);
+        const villageRows = Object.entries(villages).sort((a,b)=>b[1]-a[1]).map(([vill, ha]) =>
+          `<div class="cal-village-row">
+            <span class="cal-vname">${vill}</span>
+            <span class="cal-vval">${fmtHa(ha)} Ha</span>
+          </div>`
+        ).join('');
+        return `<div class="cal-dist-block">
+          <div class="cal-dist-row" onclick="this.nextElementSibling.classList.toggle('open')">
+            <span class="cal-dname">📍 ${dist}</span>
+            <span class="cal-dval">${fmtHa(distHa)} Ha <span style="font-size:10px;opacity:0.6">▾</span></span>
+          </div>
+          <div class="cal-villages">${villageRows}</div>
+        </div>`;
+      }).join('');
+      return `<div class="cal-prov-block">
+        <div class="cal-prov-row" onclick="this.nextElementSibling.classList.toggle('open')">
+          <span class="cal-pname">🏛 ${prov}</span>
+          <span class="cal-pval">${fmtHa(provHa)} Ha <span style="font-size:10px;opacity:0.6">▾</span></span>
+        </div>
+        <div class="cal-dists open">${distRows}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="month-card">
+      <div class="month-header">
+        <span>${MONTH_NAMES[m]}</span>
+        <span class="month-ha">${fmtHa(totalHa)} Ha</span>
+      </div>
+      <div class="month-body">${provRows}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('month-grid').innerHTML = html || `<div class="no-data">Không có dữ liệu</div>`;
+}
+
+function updateProvinces() {
+  const provMap = {};
+  filtered.forEach(r => {
+    if (!provMap[r.prov]) provMap[r.prov] = {ha:0, plan:0, stages:{}, dists:new Set()};
+    provMap[r.prov].ha += r.ha;
+    provMap[r.prov].plan += r.plan;
+    if (r.stage) provMap[r.prov].stages[r.stage] = (provMap[r.prov].stages[r.stage]||0) + r.ha;
+    if (r.dist) provMap[r.prov].dists.add(r.dist);
+  });
+
+  const sorted = Object.entries(provMap).sort((a,b)=>b[1].ha-a[1].ha);
+  const stageOrder = ['Mạ','Chuẩn bị xuống giống','Chín','Thu hoạch'];
+
+  const html = sorted.map(([prov, d]) => {
+    const total = d.ha;
+    const bars = stageOrder.map(s => {
+      const v = d.stages[s]||0;
+      const pct = total > 0 ? v/total*100 : 0;
+      if (pct < 1) return '';
+      const col = (STAGE_COLORS[s]||{bar:'#9ca3af'}).bar;
+      return `<div class="pbar-seg" style="width:${pct}%;background:${col}" title="${s}: ${fmtHa(v)} Ha"></div>`;
+    }).join('');
+
+    const pct = d.plan > 0 ? Math.min(d.ha/d.plan*100, 100) : 0;
+    return `<div class="prov-card" onclick="filterByProvince('${prov}')">
+      <div class="pname">${prov}</div>
+      <div class="pstage-bar">${bars||'<div class="pbar-seg" style="width:100%;background:#e5e7eb"></div>'}</div>
+      <div class="pmeta">
+        <span>${d.dists.size} huyện</span>
+        <span class="total">${fmtHa(total)} Ha</span>
+      </div>
+      <div class="progress-bar" style="margin-top:6px;height:3px"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('province-grid').innerHTML = html || `<div class="no-data">Không có dữ liệu</div>`;
+  updateProvinceBubble();
+}
+
+function filterByProvince(prov) {
+  document.getElementById('f-prov').value = prov;
+  switchView('table', document.querySelector('[data-view="table"]'));
+  applyFilters();
+}
+
+function switchView(view, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const titles = {
+    dashboard: 'Tổng quan', table: 'Danh sách chi tiết',
+    calendar: 'Lịch theo tháng', provinces: 'Phân tích theo tỉnh'
+  };
+  document.getElementById('view-title').textContent = titles[view] || view;
+  if (view === 'dashboard') updateDashboard();
+}
+
+// Province bubble chart
+function updateProvinceBubble() {
+  const provMap = {};
+  filtered.forEach(r => {
+    if (!provMap[r.prov]) provMap[r.prov] = {ha:0, plan:0, stages:{}};
+    provMap[r.prov].ha += r.ha;
+    provMap[r.prov].plan += r.plan;
+    if (r.stage) provMap[r.prov].stages[r.stage] = (provMap[r.prov].stages[r.stage]||0) + r.ha;
+  });
+
+  const sorted = Object.entries(provMap).filter(e=>e[1].ha>0).sort((a,b)=>b[1].ha-a[1].ha);
+  if (!sorted.length) { document.getElementById('province-bubble-chart').innerHTML=''; return; }
+
+  const W = document.getElementById('province-bubble-wrap').clientWidth || 700;
+  const cols = Math.min(sorted.length, Math.floor(W / 110));
+  const rows = Math.ceil(sorted.length / cols);
+  const cellW = W / cols;
+  const maxHa = sorted[0][1].ha;
+  const H = rows * 110 + 20;
+
+  const stageColorMap = {
+    'Mạ':'#60a5fa','Chuẩn bị xuống giống':'#fbbf24','Chín':'#c084fc','Thu hoạch':'#4ade80'
+  };
+
+  let svg = '<svg id="province-bubble-chart" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">';
+
+  sorted.forEach(([prov, d], i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const cx = col * cellW + cellW/2;
+    const cy = row * 110 + 55;
+    const maxR = 42;
+    const r = Math.max(10, Math.sqrt(d.ha/maxHa) * maxR);
+
+    // Stage arc segments
+    const stages = Object.entries(d.stages);
+    const total = Object.values(d.stages).reduce((a,b)=>a+b,0);
+
+    if (stages.length === 0 || total === 0) {
+      svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="#e5e7eb" opacity="0.8"/>';
+    } else if (stages.length === 1) {
+      const col2 = stageColorMap[stages[0][0]] || '#9ca3af';
+      svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+col2+'" opacity="0.85"/>';
+    } else {
+      let startAngle = -Math.PI/2;
+      stages.forEach(([stage, ha]) => {
+        const angle = (ha/total) * 2 * Math.PI;
+        const endAngle = startAngle + angle;
+        const x1 = cx + r * Math.cos(startAngle);
+        const y1 = cy + r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy + r * Math.sin(endAngle);
+        const large = angle > Math.PI ? 1 : 0;
+        const col2 = stageColorMap[stage] || '#9ca3af';
+        svg += '<path d="M '+cx+' '+cy+' L '+x1+' '+y1+' A '+r+' '+r+' 0 '+large+' 1 '+x2+' '+y2+' Z" fill="'+col2+'" opacity="0.85"/>';
+        startAngle = endAngle;
+      });
+    }
+
+    // Border
+    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="white" stroke-width="1.5"/>';
+
+    // Province label
+    const fontSize = r > 25 ? 10 : (r > 15 ? 9 : 8);
+    const shortName = prov.length > 10 ? prov.substring(0,9)+'…' : prov;
+    svg += '<text x="'+cx+'" y="'+(cy+r+13)+'" text-anchor="middle" font-size="'+fontSize+'" fill="#374151" font-family="Be Vietnam Pro, sans-serif">'+shortName+'</text>';
+
+    // Ha value inside
+    if (r > 20) {
+      svg += '<text x="'+cx+'" y="'+(cy+3)+'" text-anchor="middle" font-size="9" fill="white" font-weight="600" font-family="Be Vietnam Pro, sans-serif">'+fmtHa(d.ha)+'</text>';
+    }
+  });
+
+  // Legend
+  const legendY = H - 10;
+  const legendItems = [['Mạ','#60a5fa'],['Chuẩn bị','#fbbf24'],['Chín','#c084fc'],['Thu hoạch','#4ade80']];
+  let lx = 10;
+  legendItems.forEach(([label, color]) => {
+    svg += '<rect x="'+lx+'" y="'+(legendY-10)+'" width="10" height="10" rx="2" fill="'+color+'"/>';
+    svg += '<text x="'+(lx+13)+'" y="'+(legendY)+'" font-size="10" fill="#6b7280" font-family="Be Vietnam Pro, sans-serif">'+label+'</text>';
+    lx += 80;
+  });
+
+  svg += '</svg>';
+  document.getElementById('province-bubble-wrap').innerHTML = svg;
+}
+
+// Init
+document.getElementById('f-nv').addEventListener('change', applyFilters);
+document.getElementById('f-season').addEventListener('change', applyFilters);
+document.getElementById('f-prov').addEventListener('change', applyFilters);
+document.getElementById('f-stage').addEventListener('change', applyFilters);
+document.getElementById('f-month').addEventListener('change', applyFilters);
+
+const now = new Date();
+document.getElementById('today-display').textContent = `Hôm nay: ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+
+loadData();
+</script>
+</div>
+</body>
+</html>
